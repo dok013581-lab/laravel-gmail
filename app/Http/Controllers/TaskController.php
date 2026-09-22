@@ -61,22 +61,25 @@ if ($request->filled('deadline')) {
             ->where('status', '!=', 'Hoàn thành')
             ->count();
 
-        // Xử lý sắp xếp công việc
+        // Xử lý sắp xếp công việc (mặc định: hạn hoàn thành gần nhất -> xa nhất, không có hạn nằm cuối)
         if ($request->filled('sort')) {
-            if ($request->sort === 'deadline_asc') {
-                $query->orderByRaw('CASE WHEN deadline IS NULL THEN 1 ELSE 0 END, deadline ASC')->orderBy('id', 'desc');
+            if ($request->sort === 'latest') {
+                $query->latest();
             } elseif ($request->sort === 'priority_desc') {
                 $query->orderByRaw("CASE priority WHEN 'Cao' THEN 1 WHEN 'Trung bình' THEN 2 WHEN 'Thấp' THEN 3 ELSE 4 END ASC")->orderBy('id', 'desc');
             } else {
-                $query->latest();
+                $query->orderByRaw('CASE WHEN deadline IS NULL THEN 1 ELSE 0 END, deadline ASC')->orderBy('id', 'desc');
             }
         } else {
-            $query->latest();
+            $query->orderByRaw('CASE WHEN deadline IS NULL THEN 1 ELSE 0 END, deadline ASC')->orderBy('id', 'desc');
         }
+
+        $kanbanQuery = (clone $query)->with(['attachments', 'checklists']);
+        $kanbanTasks = $kanbanQuery->get();
 
         $tasks = $query->paginate(10)->withQueryString();
 
-        return view('tasks.index', compact('tasks', 'overdueCount', 'upcomingCount'));
+        return view('tasks.index', compact('tasks', 'kanbanTasks', 'overdueCount', 'upcomingCount'));
     }
 
     // Hiển thị form thêm công việc
@@ -198,6 +201,14 @@ if ($request->filled('deadline')) {
         $task->update([
             'status' => $request->status,
         ]);
+
+        if ($request->wantsJson() || $request->ajax()) {
+            return response()->json([
+                'success' => true,
+                'message' => 'Cập nhật trạng thái công việc thành công!',
+                'status' => $task->status,
+            ]);
+        }
 
         $request->session()->flash('success', 'Cập nhật trạng thái công việc thành công!');
 

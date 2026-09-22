@@ -8,6 +8,7 @@
 
     <link rel="stylesheet"
           href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.2/css/all.min.css">
+    <script src="{{ asset('js/dark-mode.js') }}"></script>
 
     <!-- Chart.js CDN -->
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
@@ -282,12 +283,15 @@
 
             box-shadow: 0 3px 12px rgba(0,0,0,0.03);
             transition: all 0.25s ease;
+            text-decoration: none;
+            color: inherit;
+            cursor: pointer;
         }
 
         .stat-card:hover {
             transform: translateY(-3px);
-            box-shadow: 0 8px 24px rgba(0,0,0,0.06);
-            border-color: #d1d5db;
+            box-shadow: 0 8px 24px rgba(37,99,235,0.12);
+            border-color: #bfdbfe;
         }
 
         .stat-info p {
@@ -337,6 +341,84 @@
         .stat-icon.icon-completed {
             background: #ecfdf5;
             color: #059669;
+        }
+
+        /* DASHBOARD WIDGET TABS */
+        .widget-tabs-wrapper {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            flex-wrap: wrap;
+        }
+
+        .dashboard-tab-btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            padding: 8px 14px;
+            border-radius: 8px;
+            border: 1px solid #e5e7eb;
+            background: #f8fafc;
+            color: #4b5563;
+            font-size: 13px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+
+        .dashboard-tab-btn:hover {
+            background: #f0f5ff;
+            color: #2563eb;
+            border-color: #bfdbfe;
+        }
+
+        .dashboard-tab-btn.active {
+            background: #2563eb;
+            color: #ffffff;
+            border-color: #2563eb;
+            box-shadow: 0 2px 8px rgba(37, 99, 235, 0.25);
+        }
+
+        .tab-count-pill {
+            font-size: 11px;
+            font-weight: 700;
+            padding: 2px 7px;
+            border-radius: 10px;
+            background: #e2e8f0;
+            color: #334155;
+        }
+
+        .tab-count-pill.alert {
+            background: #fef2f2;
+            color: #ef4444;
+        }
+
+        .tab-count-pill.warning {
+            background: #fff7ed;
+            color: #d97706;
+        }
+
+        .dashboard-tab-btn.active .tab-count-pill {
+            background: rgba(255, 255, 255, 0.25) !important;
+            color: #ffffff !important;
+        }
+
+        html[data-theme="dark"] .dashboard-tab-btn {
+            background: #0f172a;
+            border-color: #334155;
+            color: #94a3b8;
+        }
+
+        html[data-theme="dark"] .dashboard-tab-btn:hover {
+            background: #1e293b;
+            color: #60a5fa;
+            border-color: #475569;
+        }
+
+        html[data-theme="dark"] .dashboard-tab-btn.active {
+            background: #2563eb;
+            color: #ffffff;
+            border-color: #2563eb;
         }
 
         /* NOTIFICATION CENTER */
@@ -682,6 +764,8 @@
             justify-content: space-between;
             align-items: center;
             margin-bottom: 18px;
+            flex-wrap: wrap;
+            gap: 12px;
         }
 
         .card-header h3 {
@@ -694,10 +778,15 @@
             text-decoration: none;
             font-size: 13px;
             font-weight: 600;
+            display: inline-flex;
+            align-items: center;
+            gap: 5px;
+            transition: all 0.2s ease;
         }
 
         .view-all:hover {
             text-decoration: underline;
+            color: #1d4ed8;
         }
 
         /* TASK ITEM */
@@ -737,12 +826,23 @@
             margin-bottom: 5px;
         }
 
+        .task-info strong a {
+            color: inherit;
+            text-decoration: none;
+            transition: color 0.15s ease;
+        }
+
+        .task-info strong a:hover {
+            color: #2563eb;
+        }
+
         .task-meta {
             display: flex;
             align-items: center;
             gap: 12px;
             color: #6b7280;
             font-size: 12px;
+            flex-wrap: wrap;
         }
 
         .priority-badge {
@@ -775,6 +875,9 @@
             border-radius: 20px;
             font-size: 11px;
             font-weight: bold;
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
         }
 
         .status.pending {
@@ -790,6 +893,36 @@
         .status.completed {
             background: #ecfdf5;
             color: #059669;
+        }
+
+        .actions {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            margin-left: 12px;
+        }
+
+        .action-btn {
+            width: 32px;
+            height: 32px;
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border: none;
+            cursor: pointer;
+            font-size: 12px;
+            text-decoration: none;
+            transition: all 0.2s ease;
+        }
+
+        .view-btn {
+            background: #f0fdf4;
+            color: #16a34a;
+        }
+
+        .view-btn:hover {
+            background: #dcfce7;
         }
 
         /* QUICK ACTION SIDE PANEL */
@@ -890,6 +1023,7 @@
             }
         }
     </style>
+    <link rel="stylesheet" href="{{ asset('css/dark-mode.css') }}">
 </head>
 
 <body>
@@ -983,6 +1117,11 @@
             </div>
 
             <div class="topbar-actions">
+                <button type="button" class="dark-mode-toggle" id="darkModeToggle">
+                    <i class="fa-solid fa-moon"></i>
+                    <span class="toggle-text">Giao diện tối</span>
+                </button>
+
                 <a href="/tasks/create" class="quick-create-btn">
                     <i class="fa-solid fa-plus"></i>
                     Thêm công việc
@@ -1083,7 +1222,7 @@
 
         <div class="stats">
 
-            <div class="stat-card">
+            <a href="/tasks" class="stat-card" title="Xem tất cả công việc">
                 <div class="stat-info">
                     <p>Tổng công việc</p>
                     <h2>
@@ -1093,9 +1232,9 @@
                 <div class="stat-icon">
                     <i class="fa-solid fa-list-check"></i>
                 </div>
-            </div>
+            </a>
 
-            <div class="stat-card">
+            <a href="/tasks?status={{ urlencode('Chưa làm') }}" class="stat-card" title="Xem danh sách công việc chưa làm">
                 <div class="stat-info">
                     <p>Chưa làm</p>
                     <h2>
@@ -1105,9 +1244,9 @@
                 <div class="stat-icon icon-pending">
                     <i class="fa-regular fa-clock"></i>
                 </div>
-            </div>
+            </a>
 
-            <div class="stat-card">
+            <a href="/tasks?status={{ urlencode('Đang làm') }}" class="stat-card" title="Xem danh sách công việc đang làm">
                 <div class="stat-info">
                     <p>Đang làm</p>
                     <h2>
@@ -1117,9 +1256,9 @@
                 <div class="stat-icon icon-doing">
                     <i class="fa-solid fa-spinner"></i>
                 </div>
-            </div>
+            </a>
 
-            <div class="stat-card">
+            <a href="/tasks?status={{ urlencode('Hoàn thành') }}" class="stat-card" title="Xem danh sách công việc đã hoàn thành">
                 <div class="stat-info">
                     <p>Hoàn thành</p>
                     <h2>
@@ -1129,9 +1268,9 @@
                 <div class="stat-icon icon-completed">
                     <i class="fa-solid fa-circle-check"></i>
                 </div>
-            </div>
+            </a>
 
-            <div class="stat-card">
+            <a href="/tasks?deadline=overdue" class="stat-card" title="Xem danh sách công việc quá hạn">
                 <div class="stat-info">
                     <p>Công việc quá hạn</p>
                     <h2>
@@ -1141,9 +1280,9 @@
                 <div class="stat-icon icon-overdue">
                     <i class="fa-solid fa-triangle-exclamation"></i>
                 </div>
-            </div>
+            </a>
 
-            <div class="stat-card">
+            <a href="/tasks?deadline=upcoming" class="stat-card" title="Xem danh sách công việc sắp đến hạn trong 7 ngày">
                 <div class="stat-info">
                     <p>Công việc sắp đến hạn</p>
                     <h2>
@@ -1153,13 +1292,13 @@
                 <div class="stat-icon icon-upcoming">
                     <i class="fa-solid fa-hourglass-half"></i>
                 </div>
-            </div>
+            </a>
 
         </div>
 
         <!-- CHARTS -->
         <div class="section-title" style="margin-top: 10px;">
-            Thống kê biểu đồ
+            Thống kê biểu đồ (Bấm để xem danh sách tương ứng)
         </div>
 
         <div class="charts-grid">
@@ -1184,100 +1323,232 @@
             </div>
         </div>
 
-        <!-- CONTENT -->
+        <!-- CONTENT & TASK WIDGETS -->
         <div class="content-grid">
 
-            <!-- RECENT TASKS -->
+            <!-- TASK WIDGET CARD -->
             <div class="card">
 
-                <div class="card-header">
-                    <h3>
-                        Công việc gần đây
-                    </h3>
+                @php
+                    $defaultTab = ($overdueTasks > 0) ? 'overdue' : (($upcomingTasks > 0) ? 'upcoming' : 'recent');
+                @endphp
 
-                    <a href="/tasks" class="view-all">
+                <div class="card-header">
+                    <div class="widget-tabs-wrapper">
+                        <button type="button" class="dashboard-tab-btn {{ $defaultTab == 'overdue' ? 'active' : '' }}" id="tabBtnOverdue" onclick="switchDashboardTab('overdue')">
+                            <i class="fa-solid fa-triangle-exclamation" style="color: #ef4444;"></i>
+                            <span>Quá hạn</span>
+                            <span class="tab-count-pill alert">{{ $overdueTasks }}</span>
+                        </button>
+
+                        <button type="button" class="dashboard-tab-btn {{ $defaultTab == 'upcoming' ? 'active' : '' }}" id="tabBtnUpcoming" onclick="switchDashboardTab('upcoming')">
+                            <i class="fa-solid fa-hourglass-half" style="color: #f59e0b;"></i>
+                            <span>Sắp đến hạn</span>
+                            <span class="tab-count-pill warning">{{ $upcomingTasks }}</span>
+                        </button>
+
+                        <button type="button" class="dashboard-tab-btn {{ $defaultTab == 'recent' ? 'active' : '' }}" id="tabBtnRecent" onclick="switchDashboardTab('recent')">
+                            <i class="fa-solid fa-clock-rotate-left" style="color: #2563eb;"></i>
+                            <span>Gần đây</span>
+                            <span class="tab-count-pill info">{{ $recentTasks->count() }}</span>
+                        </button>
+                    </div>
+
+                    <a href="/tasks?deadline=overdue" id="dashboardViewAllBtn" class="view-all">
                         Xem tất cả <i class="fa-solid fa-arrow-right" style="font-size: 11px;"></i>
                     </a>
                 </div>
 
-                @if($recentTasks->count() > 0)
+                <!-- WIDGET 1: OVERDUE TASKS LIST -->
+                <div id="widgetOverdueList" class="widget-task-content" style="display: {{ $defaultTab == 'overdue' ? 'block' : 'none' }};">
+                    @if(isset($overdueTasksList) && $overdueTasksList->count() > 0)
+                        @foreach($overdueTasksList as $task)
+                            <div class="task">
+                                <div class="task-check" style="background: #fef2f2; color: #ef4444;">
+                                    <i class="fa-solid fa-triangle-exclamation"></i>
+                                </div>
 
-                    @foreach($recentTasks as $task)
+                                <div class="task-info">
+                                    <strong>
+                                        <a href="/tasks/{{ $task->id }}">{{ $task->title }}</a>
+                                    </strong>
 
-                        <div class="task">
+                                    <div class="task-meta">
+                                        @if($task->priority == 'Cao')
+                                            <span class="priority-badge priority-high">
+                                                <i class="fa-solid fa-circle" style="font-size: 6px;"></i> Cao
+                                            </span>
+                                        @elseif($task->priority == 'Trung bình')
+                                            <span class="priority-badge priority-medium">
+                                                <i class="fa-solid fa-circle" style="font-size: 6px;"></i> Trung bình
+                                            </span>
+                                        @else
+                                            <span class="priority-badge priority-low">
+                                                <i class="fa-solid fa-circle" style="font-size: 6px;"></i> Thấp
+                                            </span>
+                                        @endif
 
-                            <div class="task-check">
-                                @if($task->status == 'Hoàn thành')
-                                    <i class="fa-solid fa-check"></i>
-                                @elseif($task->status == 'Đang làm')
-                                    <i class="fa-solid fa-spinner"></i>
+                                        @if($task->deadline)
+                                            <span style="color: #ef4444; font-weight: 600;">
+                                                <i class="fa-regular fa-calendar-times"></i>
+                                                Quá hạn: {{ \Carbon\Carbon::parse($task->deadline)->format('d/m/Y') }}
+                                            </span>
+                                        @endif
+                                    </div>
+                                </div>
+
+                                @if($task->status == 'Đang làm')
+                                    <span class="status doing">Đang làm</span>
                                 @else
-                                    <i class="fa-regular fa-clock"></i>
+                                    <span class="status pending">Chưa làm</span>
                                 @endif
-                            </div>
 
-                            <div class="task-info">
-                                <strong>
-                                    {{ $task->title }}
-                                </strong>
-
-                                <div class="task-meta">
-                                    <span>
-                                        <i class="fa-regular fa-clock"></i>
-                                        {{ $task->created_at->format('d/m/Y H:i') }}
-                                    </span>
-
-                                    @if($task->priority == 'Cao')
-                                        <span class="priority-badge priority-high">
-                                            <i class="fa-solid fa-circle" style="font-size: 6px;"></i> Cao
-                                        </span>
-                                    @elseif($task->priority == 'Trung bình')
-                                        <span class="priority-badge priority-medium">
-                                            <i class="fa-solid fa-circle" style="font-size: 6px;"></i> Trung bình
-                                        </span>
-                                    @else
-                                        <span class="priority-badge priority-low">
-                                            <i class="fa-solid fa-circle" style="font-size: 6px;"></i> Thấp
-                                        </span>
-                                    @endif
-
-                                    @if($task->deadline)
-                                        <span>
-                                            <i class="fa-regular fa-calendar-check"></i>
-                                            Hạn: {{ \Carbon\Carbon::parse($task->deadline)->format('d/m/Y') }}
-                                        </span>
-                                    @endif
+                                <div class="actions">
+                                    <a href="/tasks/{{ $task->id }}" class="action-btn view-btn" title="Xem chi tiết">
+                                        <i class="fa-solid fa-eye"></i>
+                                    </a>
                                 </div>
                             </div>
-
-                            @if($task->status == 'Hoàn thành')
-                                <span class="status completed">
-                                    Hoàn thành
-                                </span>
-                            @elseif($task->status == 'Đang làm')
-                                <span class="status doing">
-                                    Đang làm
-                                </span>
-                            @else
-                                <span class="status pending">
-                                    Chưa làm
-                                </span>
-                            @endif
-
+                        @endforeach
+                    @else
+                        <div class="empty">
+                            <i class="fa-regular fa-circle-check" style="color: #10b981;"></i>
+                            <p>Tuyệt vời! Bạn không có công việc nào bị quá hạn.</p>
                         </div>
+                    @endif
+                </div>
 
-                    @endforeach
+                <!-- WIDGET 2: UPCOMING TASKS LIST -->
+                <div id="widgetUpcomingList" class="widget-task-content" style="display: {{ $defaultTab == 'upcoming' ? 'block' : 'none' }};">
+                    @if(isset($upcomingTasksList) && $upcomingTasksList->count() > 0)
+                        @foreach($upcomingTasksList as $task)
+                            <div class="task">
+                                <div class="task-check" style="background: #fff7ed; color: #f59e0b;">
+                                    <i class="fa-regular fa-clock"></i>
+                                </div>
 
-                @else
+                                <div class="task-info">
+                                    <strong>
+                                        <a href="/tasks/{{ $task->id }}">{{ $task->title }}</a>
+                                    </strong>
 
-                    <div class="empty">
-                        <i class="fa-regular fa-folder-open"></i>
-                        <p>
-                            Bạn chưa có công việc nào.
-                        </p>
-                    </div>
+                                    <div class="task-meta">
+                                        @if($task->priority == 'Cao')
+                                            <span class="priority-badge priority-high">
+                                                <i class="fa-solid fa-circle" style="font-size: 6px;"></i> Cao
+                                            </span>
+                                        @elseif($task->priority == 'Trung bình')
+                                            <span class="priority-badge priority-medium">
+                                                <i class="fa-solid fa-circle" style="font-size: 6px;"></i> Trung bình
+                                            </span>
+                                        @else
+                                            <span class="priority-badge priority-low">
+                                                <i class="fa-solid fa-circle" style="font-size: 6px;"></i> Thấp
+                                            </span>
+                                        @endif
 
-                @endif
+                                        @if($task->deadline)
+                                            @php $dl = \Carbon\Carbon::parse($task->deadline); @endphp
+                                            <span style="color: #d97706; font-weight: 600;">
+                                                <i class="fa-regular fa-calendar"></i>
+                                                Hạn: {{ $dl->isToday() ? 'Hôm nay' : $dl->format('d/m/Y') }}
+                                            </span>
+                                        @endif
+                                    </div>
+                                </div>
+
+                                @if($task->status == 'Đang làm')
+                                    <span class="status doing">Đang làm</span>
+                                @else
+                                    <span class="status pending">Chưa làm</span>
+                                @endif
+
+                                <div class="actions">
+                                    <a href="/tasks/{{ $task->id }}" class="action-btn view-btn" title="Xem chi tiết">
+                                        <i class="fa-solid fa-eye"></i>
+                                    </a>
+                                </div>
+                            </div>
+                        @endforeach
+                    @else
+                        <div class="empty">
+                            <i class="fa-regular fa-folder-open"></i>
+                            <p>Không có công việc nào sắp đến hạn trong 7 ngày tới.</p>
+                        </div>
+                    @endif
+                </div>
+
+                <!-- WIDGET 3: RECENT TASKS LIST -->
+                <div id="widgetRecentList" class="widget-task-content" style="display: {{ $defaultTab == 'recent' ? 'block' : 'none' }};">
+                    @if($recentTasks->count() > 0)
+                        @foreach($recentTasks as $task)
+                            <div class="task">
+                                <div class="task-check">
+                                    @if($task->status == 'Hoàn thành')
+                                        <i class="fa-solid fa-check"></i>
+                                    @elseif($task->status == 'Đang làm')
+                                        <i class="fa-solid fa-spinner"></i>
+                                    @else
+                                        <i class="fa-regular fa-clock"></i>
+                                    @endif
+                                </div>
+
+                                <div class="task-info">
+                                    <strong>
+                                        <a href="/tasks/{{ $task->id }}">{{ $task->title }}</a>
+                                    </strong>
+
+                                    <div class="task-meta">
+                                        <span>
+                                            <i class="fa-regular fa-clock"></i>
+                                            {{ $task->created_at->format('d/m/Y H:i') }}
+                                        </span>
+
+                                        @if($task->priority == 'Cao')
+                                            <span class="priority-badge priority-high">
+                                                <i class="fa-solid fa-circle" style="font-size: 6px;"></i> Cao
+                                            </span>
+                                        @elseif($task->priority == 'Trung bình')
+                                            <span class="priority-badge priority-medium">
+                                                <i class="fa-solid fa-circle" style="font-size: 6px;"></i> Trung bình
+                                            </span>
+                                        @else
+                                            <span class="priority-badge priority-low">
+                                                <i class="fa-solid fa-circle" style="font-size: 6px;"></i> Thấp
+                                            </span>
+                                        @endif
+
+                                        @if($task->deadline)
+                                            <span>
+                                                <i class="fa-regular fa-calendar-check"></i>
+                                                Hạn: {{ \Carbon\Carbon::parse($task->deadline)->format('d/m/Y') }}
+                                            </span>
+                                        @endif
+                                    </div>
+                                </div>
+
+                                @if($task->status == 'Hoàn thành')
+                                    <span class="status completed">Hoàn thành</span>
+                                @elseif($task->status == 'Đang làm')
+                                    <span class="status doing">Đang làm</span>
+                                @else
+                                    <span class="status pending">Chưa làm</span>
+                                @endif
+
+                                <div class="actions">
+                                    <a href="/tasks/{{ $task->id }}" class="action-btn view-btn" title="Xem chi tiết">
+                                        <i class="fa-solid fa-eye"></i>
+                                    </a>
+                                </div>
+                            </div>
+                        @endforeach
+                    @else
+                        <div class="empty">
+                            <i class="fa-regular fa-folder-open"></i>
+                            <p>Bạn chưa có công việc nào.</p>
+                        </div>
+                    @endif
+                </div>
 
             </div>
 
@@ -1302,10 +1573,46 @@
     </main>
 
     <script>
+        function switchDashboardTab(tabName) {
+            const btnOverdue = document.getElementById('tabBtnOverdue');
+            const btnUpcoming = document.getElementById('tabBtnUpcoming');
+            const btnRecent = document.getElementById('tabBtnRecent');
+
+            const listOverdue = document.getElementById('widgetOverdueList');
+            const listUpcoming = document.getElementById('widgetUpcomingList');
+            const listRecent = document.getElementById('widgetRecentList');
+
+            const viewAllBtn = document.getElementById('dashboardViewAllBtn');
+
+            [btnOverdue, btnUpcoming, btnRecent].forEach(b => b && b.classList.remove('active'));
+            [listOverdue, listUpcoming, listRecent].forEach(l => l && (l.style.display = 'none'));
+
+            if (tabName === 'overdue') {
+                if (btnOverdue) btnOverdue.classList.add('active');
+                if (listOverdue) listOverdue.style.display = 'block';
+                if (viewAllBtn) viewAllBtn.href = '/tasks?deadline=overdue';
+            } else if (tabName === 'upcoming') {
+                if (btnUpcoming) btnUpcoming.classList.add('active');
+                if (listUpcoming) listUpcoming.style.display = 'block';
+                if (viewAllBtn) viewAllBtn.href = '/tasks?deadline=upcoming';
+            } else {
+                if (btnRecent) btnRecent.classList.add('active');
+                if (listRecent) listRecent.style.display = 'block';
+                if (viewAllBtn) viewAllBtn.href = '/tasks';
+            }
+        }
+
         document.addEventListener('DOMContentLoaded', function() {
+            const isDark = document.documentElement.getAttribute('data-theme') === 'dark';
+            const textColor = isDark ? '#cbd5e1' : '#64748b';
+            const gridColor = isDark ? 'rgba(255, 255, 255, 0.1)' : 'rgba(0, 0, 0, 0.05)';
+
+            // Initialize default viewAll button link
+            switchDashboardTab('{{ $defaultTab }}');
+
             // Chart 1: Status Distribution (Doughnut Chart)
             const ctxStatus = document.getElementById('statusChart').getContext('2d');
-            new Chart(ctxStatus, {
+            const statusChart = new Chart(ctxStatus, {
                 type: 'doughnut',
                 data: {
                     labels: ['Chưa làm', 'Đang làm', 'Hoàn thành'],
@@ -1313,17 +1620,30 @@
                         data: [{{ $pendingTasks }}, {{ $doingTasks }}, {{ $completedTasks }}],
                         backgroundColor: ['#ea580c', '#2563eb', '#059669'],
                         borderWidth: 2,
-                        borderColor: '#ffffff',
+                        borderColor: isDark ? '#1e293b' : '#ffffff',
                         hoverOffset: 6
                     }]
                 },
                 options: {
                     responsive: true,
                     maintainAspectRatio: false,
+                    onHover: (event, chartElement) => {
+                        event.native.target.style.cursor = chartElement.length ? 'pointer' : 'default';
+                    },
+                    onClick: (event, elements) => {
+                        if (elements.length > 0) {
+                            const index = elements[0].index;
+                            const statusMap = ['Chưa làm', 'Đang làm', 'Hoàn thành'];
+                            if (statusMap[index]) {
+                                window.location.href = `/tasks?status=${encodeURIComponent(statusMap[index])}`;
+                            }
+                        }
+                    },
                     plugins: {
                         legend: {
                             position: 'bottom',
                             labels: {
+                                color: textColor,
                                 padding: 16,
                                 font: { family: 'Arial', size: 13 }
                             }
@@ -1335,7 +1655,7 @@
 
             // Chart 2: Priority Distribution (Bar Chart)
             const ctxPriority = document.getElementById('priorityChart').getContext('2d');
-            new Chart(ctxPriority, {
+            const priorityChart = new Chart(ctxPriority, {
                 type: 'bar',
                 data: {
                     labels: ['Thấp', 'Trung bình', 'Cao'],
@@ -1352,6 +1672,18 @@
                 options: {
                     responsive: true,
                     maintainAspectRatio: false,
+                    onHover: (event, chartElement) => {
+                        event.native.target.style.cursor = chartElement.length ? 'pointer' : 'default';
+                    },
+                    onClick: (event, elements) => {
+                        if (elements.length > 0) {
+                            const index = elements[0].index;
+                            const priorityMap = ['Thấp', 'Trung bình', 'Cao'];
+                            if (priorityMap[index]) {
+                                window.location.href = `/tasks?priority=${encodeURIComponent(priorityMap[index])}`;
+                            }
+                        }
+                    },
                     plugins: {
                         legend: {
                             display: false
@@ -1361,18 +1693,24 @@
                         y: {
                             beginAtZero: true,
                             ticks: {
+                                color: textColor,
                                 stepSize: 1,
                                 font: { family: 'Arial', size: 12 }
                             },
-                            grid: { color: '#f3f4f6' }
+                            grid: { color: gridColor }
                         },
                         x: {
                             grid: { display: false },
-                            ticks: { font: { family: 'Arial', size: 13, weight: 'bold' } }
+                            ticks: { color: textColor, font: { family: 'Arial', size: 13, weight: 'bold' } }
                         }
                     }
                 }
             });
+
+            window.myCharts = {
+                status: statusChart,
+                priority: priorityChart
+            };
         });
 
         function toggleNotifDropdown(e) {

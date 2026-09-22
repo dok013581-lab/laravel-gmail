@@ -38,6 +38,20 @@ Route::get('/dashboard', function () {
 
     $recentTasks = $user->tasks()->latest()->take(5)->get();
 
+    $overdueTasksList = $user->tasks()
+        ->whereDate('deadline', '<', today())
+        ->where('status', '!=', 'Hoàn thành')
+        ->orderBy('deadline', 'asc')
+        ->take(5)
+        ->get();
+
+    $upcomingTasksList = $user->tasks()
+        ->whereBetween('deadline', [today(), today()->addDays(7)])
+        ->where('status', '!=', 'Hoàn thành')
+        ->orderBy('deadline', 'asc')
+        ->take(5)
+        ->get();
+
     $lowPriorityTasks = $user->tasks()->where('priority', 'Thấp')->count();
     $mediumPriorityTasks = $user->tasks()->where('priority', 'Trung bình')->count();
     $highPriorityTasks = $user->tasks()->where('priority', 'Cao')->count();
@@ -52,7 +66,9 @@ Route::get('/dashboard', function () {
         'lowPriorityTasks',
         'mediumPriorityTasks',
         'highPriorityTasks',
-        'recentTasks'
+        'recentTasks',
+        'overdueTasksList',
+        'upcomingTasksList'
     ));
 })->middleware('auth');
 

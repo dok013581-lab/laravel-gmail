@@ -6,6 +6,7 @@
 
     <title>TaskManager - Đăng nhập</title>
 	<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.2/css/all.min.css">
+    <script src="{{ asset('js/dark-mode.js') }}"></script>
 
     <style>
         * {
@@ -283,9 +284,15 @@
             to { opacity: 0; transform: translateX(100%); }
         }
     </style>
+    <link rel="stylesheet" href="{{ asset('css/dark-mode.css') }}">
 </head>
 
 <body>
+
+    <button type="button" class="dark-mode-toggle dark-mode-toggle-floating" id="darkModeToggle">
+        <i class="fa-solid fa-moon"></i>
+        <span class="toggle-text">Giao diện tối</span>
+    </button>
 
     @if(session('error'))
         <div class="toast-container" id="toastContainer">

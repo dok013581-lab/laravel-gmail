@@ -3,11 +3,13 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="csrf-token" content="{{ csrf_token() }}">
 
     <title>TaskManager - Công việc</title>
 
     <link rel="stylesheet"
           href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.2/css/all.min.css">
+    <script src="{{ asset('js/dark-mode.js') }}"></script>
 
     <style>
         * {
@@ -592,18 +594,16 @@
             width: 100%;
         }
 
-        nav[role="navigation"] svg {
-            width: 16px;
-            height: 16px;
+        .pagination-info {
+            font-size: 13px;
+            color: #6b7280;
         }
 
-        nav[role="navigation"] .flex-1 {
+        .pagination-links {
             display: flex;
-            justify-content: space-between;
             align-items: center;
-            width: 100%;
+            gap: 4px;
             flex-wrap: wrap;
-            gap: 15px;
         }
 
         nav[role="navigation"] span.relative,
@@ -741,6 +741,99 @@
             margin: 0;
             font-size: 15px;
             color: #64748b;
+        }
+
+        .empty-cta-btn {
+            display: inline-flex;
+            flex-direction: row;
+            align-items: center;
+            justify-content: center;
+            flex-wrap: nowrap;
+            white-space: nowrap;
+            gap: 10px;
+            height: 48px;
+            width: 230px;
+            background: #2563eb;
+            color: #ffffff;
+            border-radius: 11px;
+            text-decoration: none;
+            transition: all 0.2s ease;
+            box-shadow: 0 4px 12px rgba(37, 99, 235, 0.15);
+            margin-top: 20px;
+            line-height: 1;
+            padding: 0 16px;
+            box-sizing: border-box;
+        }
+
+        .empty-cta-btn:hover {
+            background: #1d4ed8;
+            transform: translateY(-1px);
+            box-shadow: 0 4px 10px rgba(37, 99, 235, 0.2);
+        }
+
+        .empty-cta-btn:active {
+            transform: translateY(0);
+        }
+
+        .empty-cta-icon,
+        .empty-cta-text,
+        .empty-cta-arrow {
+            margin: 0 !important;
+            padding: 0 !important;
+            vertical-align: middle !important;
+            line-height: 1 !important;
+            box-sizing: border-box;
+        }
+
+        .empty-cta-icon {
+            display: inline-flex !important;
+            align-items: center !important;
+            justify-content: center !important;
+            width: 16px !important;
+            height: 16px !important;
+            font-size: 14px !important;
+            color: #ffffff !important;
+            flex-shrink: 0;
+        }
+
+        .empty-cta-icon i {
+            margin: 0 !important;
+            padding: 0 !important;
+            vertical-align: middle !important;
+            line-height: 1 !important;
+            font-size: 14px !important;
+            color: #ffffff !important;
+            display: inline-block !important;
+        }
+
+        .empty-cta-text {
+            display: inline-block !important;
+            font-size: 15px !important;
+            font-weight: 600 !important;
+            color: #ffffff !important;
+            line-height: 1 !important;
+            white-space: nowrap !important;
+        }
+
+        .empty-cta-arrow {
+            display: inline-flex !important;
+            align-items: center !important;
+            justify-content: center !important;
+            width: 16px !important;
+            height: 16px !important;
+            font-size: 13px !important;
+            color: #ffffff !important;
+            flex-shrink: 0;
+        }
+
+        .empty-cta-arrow i {
+            margin: 0 !important;
+            padding: 0 !important;
+            vertical-align: middle !important;
+            line-height: 1 !important;
+            font-size: 13px !important;
+            color: #ffffff !important;
+            display: inline-block !important;
         }
 
         /* TOAST NOTIFICATION */
@@ -1098,6 +1191,7 @@
             }
         }
     </style>
+    <link rel="stylesheet" href="{{ asset('css/dark-mode.css') }}">
 </head>
 
 <body>
@@ -1218,6 +1312,11 @@
             </div>
 
             <div class="topbar-actions" style="display: flex; align-items: center; gap: 16px;">
+                <button type="button" class="dark-mode-toggle" id="darkModeToggle">
+                    <i class="fa-solid fa-moon"></i>
+                    <span class="toggle-text">Giao diện tối</span>
+                </button>
+
                 <!-- NOTIFICATION CENTER -->
                 <div class="notif-container">
                     <button type="button" class="notif-bell-btn" id="notifBellBtn" onclick="toggleNotifDropdown(event)" title="Thông báo công việc">
@@ -1407,13 +1506,16 @@
 
                         <select name="sort" class="filter">
                             <option value="">
-                                Sắp xếp: Mới nhất
+                                Sắp xếp: Hạn gần nhất
                             </option>
                             <option value="deadline_asc" {{ request('sort') == 'deadline_asc' ? 'selected' : '' }}>
                                 Hạn hoàn thành gần nhất
                             </option>
                             <option value="priority_desc" {{ request('sort') == 'priority_desc' ? 'selected' : '' }}>
                                 Ưu tiên: Cao → Thấp
+                            </option>
+                            <option value="latest" {{ request('sort') == 'latest' ? 'selected' : '' }}>
+                                Mới nhất
                             </option>
                         </select>
 
@@ -1431,178 +1533,469 @@
 
                     </div>
 
-                    <a href="/tasks/create" class="add-btn">
-                        <i class="fa-solid fa-plus"></i>
-                        Thêm công việc
-                    </a>
+                    <div style="display: flex; align-items: center; gap: 12px; flex-wrap: wrap;">
+                        <div class="view-switcher-group">
+                            <button type="button" class="view-switch-btn" id="btnViewList" onclick="switchTaskView('list')" title="Xem dạng danh sách">
+                                <i class="fa-solid fa-list-ul"></i>
+                                <span>Danh sách</span>
+                            </button>
+                            <button type="button" class="view-switch-btn" id="btnViewKanban" onclick="switchTaskView('kanban')" title="Xem dạng bảng Kanban">
+                                <i class="fa-solid fa-table-columns"></i>
+                                <span>Kanban</span>
+                            </button>
+                        </div>
+
+                        <a href="/tasks/create" class="add-btn" style="margin-top: 0;">
+                            <i class="fa-solid fa-plus"></i>
+                            Thêm công việc
+                        </a>
+                    </div>
 
                 </div>
 
             </form>
 
-            <!-- TABLE -->
-            @if($tasks->count() > 0)
+            <!-- LIST VIEW -->
+            <div id="taskListView">
+                @if($tasks->count() > 0)
 
-                <div class="table-wrapper">
+                    <div class="table-wrapper">
 
-                    <table>
-                        <thead>
-                            <tr>
-                                <th>Công việc</th>
-                                <th>Mô tả</th>
-                                <th>Trạng thái</th>
-                                <th>Ưu tiên</th>
-                                <th class="deadline-column">Hạn hoàn thành</th>
-                                <th>Ngày tạo</th>
-                                <th>Thao tác</th>
-                            </tr>
-                        </thead>
-
-                        <tbody>
-                            @foreach($tasks as $task)
-
+                        <table>
+                            <thead>
                                 <tr>
-                                    <td>
-                                        <div class="task-title">
-                                            {{ $task->title }}
-                                        </div>
-                                    </td>
+                                    <th>Công việc</th>
+                                    <th>Mô tả</th>
+                                    <th>Trạng thái</th>
+                                    <th>Ưu tiên</th>
+                                    <th class="deadline-column">Hạn hoàn thành</th>
+                                    <th>Ngày tạo</th>
+                                    <th>Thao tác</th>
+                                </tr>
+                            </thead>
 
-                                    <td>
-                                        <div class="description" title="{{ $task->description }}">
-                                            {{ $task->description ?? 'Không có mô tả' }}
-                                        </div>
-                                    </td>
+                            <tbody>
+                                @foreach($tasks as $task)
 
-                                    <td>
-                                        <form action="/tasks/{{ $task->id }}/status" method="POST" style="margin: 0;">
-                                            @csrf
-                                            @method('PATCH')
-                                            <select name="status" class="quick-status-select {{ $task->status == 'Hoàn thành' ? 'completed' : ($task->status == 'Đang làm' ? 'doing' : 'pending') }}" onchange="this.form.submit()" title="Bấm để đổi trạng thái nhanh">
-                                                <option value="Chưa làm" {{ $task->status == 'Chưa làm' ? 'selected' : '' }}>Chưa làm</option>
-                                                <option value="Đang làm" {{ $task->status == 'Đang làm' ? 'selected' : '' }}>Đang làm</option>
-                                                <option value="Hoàn thành" {{ $task->status == 'Hoàn thành' ? 'selected' : '' }}>Hoàn thành</option>
-                                            </select>
-                                        </form>
-                                    </td>
+                                    <tr data-task-id="{{ $task->id }}">
+                                        <td>
+                                            <div class="task-title">
+                                                {{ $task->title }}
+                                            </div>
+                                        </td>
 
-                                    <td>
-                                        @if($task->priority == 'Cao')
-                                            <span class="priority-badge priority-high">
-                                                <i class="fa-solid fa-circle" style="font-size: 6px;"></i> Cao
-                                            </span>
-                                        @elseif($task->priority == 'Trung bình')
-                                            <span class="priority-badge priority-medium">
-                                                <i class="fa-solid fa-circle" style="font-size: 6px;"></i> Trung bình
-                                            </span>
-                                        @else
-                                            <span class="priority-badge priority-low">
-                                                <i class="fa-solid fa-circle" style="font-size: 6px;"></i> Thấp
-                                            </span>
-                                        @endif
-                                    </td>
+                                        <td>
+                                            <div class="description" title="{{ $task->description }}">
+                                                {{ $task->description ?? 'Không có mô tả' }}
+                                            </div>
+                                        </td>
 
-                                    <td class="deadline-column">
-                                        @if($task->deadline)
-                                            @php
-                                                $deadline = \Carbon\Carbon::parse($task->deadline);
-                                                $today = \Carbon\Carbon::today();
-                                            @endphp
+                                        <td>
+                                            <form action="/tasks/{{ $task->id }}/status" method="POST" style="margin: 0;">
+                                                @csrf
+                                                @method('PATCH')
+                                                <select name="status" class="quick-status-select {{ $task->status == 'Hoàn thành' ? 'completed' : ($task->status == 'Đang làm' ? 'doing' : 'pending') }}" onchange="this.form.submit()" title="Bấm để đổi trạng thái nhanh">
+                                                    <option value="Chưa làm" {{ $task->status == 'Chưa làm' ? 'selected' : '' }}>Chưa làm</option>
+                                                    <option value="Đang làm" {{ $task->status == 'Đang làm' ? 'selected' : '' }}>Đang làm</option>
+                                                    <option value="Hoàn thành" {{ $task->status == 'Hoàn thành' ? 'selected' : '' }}>Hoàn thành</option>
+                                                </select>
+                                            </form>
+                                        </td>
 
-                                            @if($task->status !== 'Hoàn thành' && $deadline->lt($today))
-                                                <span class="deadline-badge overdue">
-                                                    <i class="fa-solid fa-triangle-exclamation"></i>
-                                                    Quá hạn
+                                        <td>
+                                            @if($task->priority == 'Cao')
+                                                <span class="priority-badge priority-high">
+                                                    <i class="fa-solid fa-circle" style="font-size: 6px;"></i> Cao
                                                 </span>
-                                                <span class="deadline-date">
-                                                    {{ $deadline->format('d/m/Y') }}
-                                                </span>
-                                            @elseif($task->status !== 'Hoàn thành' && $deadline->isToday())
-                                                <span class="deadline-badge today">
-                                                    <i class="fa-regular fa-clock"></i>
-                                                    Hôm nay
-                                                </span>
-                                                <span class="deadline-date">
-                                                    {{ $deadline->format('d/m/Y') }}
+                                            @elseif($task->priority == 'Trung bình')
+                                                <span class="priority-badge priority-medium">
+                                                    <i class="fa-solid fa-circle" style="font-size: 6px;"></i> Trung bình
                                                 </span>
                                             @else
-                                                <span class="deadline-badge normal">
-                                                    {{ $deadline->format('d/m/Y') }}
+                                                <span class="priority-badge priority-low">
+                                                    <i class="fa-solid fa-circle" style="font-size: 6px;"></i> Thấp
                                                 </span>
                                             @endif
-                                        @else
-                                            <span class="deadline-badge normal" style="color: #9ca3af;">
-                                                Chưa đặt
-                                            </span>
-                                        @endif
-                                    </td>
+                                        </td>
 
-                                    <td style="color: #6b7280; font-size: 13px;">
-                                        {{ $task->created_at->format('d/m/Y') }}
-                                    </td>
+                                        <td class="deadline-column">
+                                            @if($task->deadline)
+                                                @php
+                                                    $deadline = \Carbon\Carbon::parse($task->deadline);
+                                                    $today = \Carbon\Carbon::today();
+                                                @endphp
 
-                                    <td>
-                                        <div class="actions">
-                                            <a href="/tasks/{{ $task->id }}"
-                                               class="action-btn view-btn"
-                                               title="Xem chi tiết">
-                                                <i class="fa-solid fa-eye"></i>
-                                            </a>
+                                                @if($task->status !== 'Hoàn thành' && $deadline->lt($today))
+                                                    <span class="deadline-badge overdue">
+                                                        <i class="fa-solid fa-triangle-exclamation"></i>
+                                                        Quá hạn
+                                                    </span>
+                                                    <span class="deadline-date">
+                                                        {{ $deadline->format('d/m/Y') }}
+                                                    </span>
+                                                @elseif($task->status !== 'Hoàn thành' && $deadline->isToday())
+                                                    <span class="deadline-badge today">
+                                                        <i class="fa-regular fa-clock"></i>
+                                                        Hôm nay
+                                                    </span>
+                                                    <span class="deadline-date">
+                                                        {{ $deadline->format('d/m/Y') }}
+                                                    </span>
+                                                @else
+                                                    <span class="deadline-badge normal">
+                                                        {{ $deadline->format('d/m/Y') }}
+                                                    </span>
+                                                @endif
+                                            @else
+                                                <span class="deadline-badge normal" style="color: #9ca3af;">
+                                                    Chưa đặt
+                                                </span>
+                                            @endif
+                                        </td>
 
-                                            <a href="/tasks/{{ $task->id }}/edit"
-                                               class="action-btn edit-btn"
-                                               title="Sửa công việc">
-                                                <i class="fa-solid fa-pen"></i>
-                                            </a>
+                                        <td style="color: #6b7280; font-size: 13px;">
+                                            {{ $task->created_at->format('d/m/Y') }}
+                                        </td>
 
-                                            <form action="/tasks/{{ $task->id }}"
-                                                  method="POST"
-                                                  onsubmit="return confirm('Bạn có chắc muốn xóa công việc này không?');">
-                                                @csrf
-                                                @method('DELETE')
+                                        <td>
+                                            <div class="actions">
+                                                <a href="/tasks/{{ $task->id }}"
+                                                   class="action-btn view-btn"
+                                                   title="Xem chi tiết">
+                                                    <i class="fa-solid fa-eye"></i>
+                                                </a>
 
-                                                <button type="submit"
-                                                        class="action-btn delete-btn"
-                                                        title="Xóa công việc">
-                                                    <i class="fa-solid fa-trash"></i>
-                                                </button>
-                                            </form>
+                                                <a href="/tasks/{{ $task->id }}/edit"
+                                                   class="action-btn edit-btn"
+                                                   title="Sửa công việc">
+                                                    <i class="fa-solid fa-pen"></i>
+                                                </a>
+
+                                                <form action="/tasks/{{ $task->id }}"
+                                                      method="POST"
+                                                      onsubmit="return confirm('Bạn có chắc muốn xóa công việc này không?');">
+                                                    @csrf
+                                                    @method('DELETE')
+
+                                                    <button type="submit"
+                                                            class="action-btn delete-btn"
+                                                            title="Xóa công việc">
+                                                        <i class="fa-solid fa-trash"></i>
+                                                    </button>
+                                                </form>
+                                            </div>
+                                        </td>
+                                    </tr>
+
+                                @endforeach
+                            </tbody>
+
+                        </table>
+
+                    </div>
+
+                    @if($tasks->hasPages())
+                        <div class="pagination-wrapper">
+                            {{ $tasks->links() }}
+                        </div>
+                    @endif
+
+                @else
+
+                    <div class="empty">
+                        <i class="fa-regular fa-folder-open"></i>
+                        <p>
+                            Không tìm thấy công việc nào.
+                        </p>
+                        @if(request('search') || request('status') || request('priority') || request('deadline'))
+                            <a href="/tasks" class="reset-filter-btn" style="margin-top: 15px; display: inline-flex;">
+                                <i class="fa-solid fa-rotate-left"></i> Xóa bộ lọc tìm kiếm
+                            </a>
+                        @else
+                            <a href="/tasks/create" class="empty-cta-btn">
+                                <span class="empty-cta-icon"><i class="fa-solid fa-plus"></i></span>
+                                <span class="empty-cta-text">Thêm công việc ngay</span>
+                                <span class="empty-cta-arrow"><i class="fa-solid fa-arrow-right"></i></span>
+                            </a>
+                        @endif
+                    </div>
+
+                @endif
+            </div>
+
+            <!-- KANBAN VIEW -->
+            <div id="taskKanbanView" style="display: none;">
+                @if(isset($kanbanTasks) && $kanbanTasks->count() > 0)
+                    @php
+                        $pendingKanban = $kanbanTasks->where('status', 'Chưa làm');
+                        $doingKanban = $kanbanTasks->where('status', 'Đang làm');
+                        $completedKanban = $kanbanTasks->where('status', 'Hoàn thành');
+                    @endphp
+
+                    <div class="kanban-board-container">
+                        <!-- CỘT: CHƯA LÀM -->
+                        <div class="kanban-column">
+                            <div class="kanban-column-header">
+                                <div class="kanban-column-title">
+                                    <i class="fa-regular fa-circle" style="color: #ea580c;"></i>
+                                    <span>Chưa làm</span>
+                                </div>
+                                <span class="kanban-column-count">{{ $pendingKanban->count() }}</span>
+                            </div>
+                            <div class="kanban-column-body" data-status="Chưa làm">
+                                @foreach($pendingKanban as $task)
+                                    <div class="kanban-card" draggable="true" data-task-id="{{ $task->id }}" data-status="{{ $task->status }}">
+                                        <div class="kanban-card-meta">
+                                            @if($task->priority == 'Cao')
+                                                <span class="priority-badge priority-high">
+                                                    <i class="fa-solid fa-circle" style="font-size: 6px;"></i> Cao
+                                                </span>
+                                            @elseif($task->priority == 'Trung bình')
+                                                <span class="priority-badge priority-medium">
+                                                    <i class="fa-solid fa-circle" style="font-size: 6px;"></i> Trung bình
+                                                </span>
+                                            @else
+                                                <span class="priority-badge priority-low">
+                                                    <i class="fa-solid fa-circle" style="font-size: 6px;"></i> Thấp
+                                                </span>
+                                            @endif
+
+                                            @if($task->deadline)
+                                                @php
+                                                    $deadline = \Carbon\Carbon::parse($task->deadline);
+                                                    $today = \Carbon\Carbon::today();
+                                                @endphp
+                                                @if($task->status !== 'Hoàn thành' && $deadline->lt($today))
+                                                    <span class="deadline-badge overdue" title="Hạn: {{ $deadline->format('d/m/Y') }}">
+                                                        <i class="fa-solid fa-triangle-exclamation"></i>
+                                                        {{ $deadline->format('d/m/Y') }}
+                                                    </span>
+                                                @elseif($task->status !== 'Hoàn thành' && $deadline->isToday())
+                                                    <span class="deadline-badge today" title="Hạn: {{ $deadline->format('d/m/Y') }}">
+                                                        <i class="fa-regular fa-clock"></i>
+                                                        Hôm nay
+                                                    </span>
+                                                @else
+                                                    <span class="deadline-badge normal" title="Hạn: {{ $deadline->format('d/m/Y') }}">
+                                                        <i class="fa-regular fa-calendar"></i>
+                                                        {{ $deadline->format('d/m/Y') }}
+                                                    </span>
+                                                @endif
+                                            @endif
                                         </div>
-                                    </td>
-                                </tr>
 
-                            @endforeach
-                        </tbody>
+                                        <a href="/tasks/{{ $task->id }}" class="kanban-card-title">
+                                            {{ $task->title }}
+                                        </a>
 
-                    </table>
+                                        @if(($task->checklists->count() > 0) || ($task->attachments->count() > 0))
+                                            <div class="kanban-card-badges">
+                                                @if($task->checklists->count() > 0)
+                                                    @php
+                                                        $completedChecklists = $task->checklists->where('is_completed', true)->count();
+                                                        $totalChecklists = $task->checklists->count();
+                                                    @endphp
+                                                    <div class="kanban-card-badge-item" title="Checklist: {{ $completedChecklists }}/{{ $totalChecklists }} hoàn thành">
+                                                        <i class="fa-regular fa-square-check"></i>
+                                                        <span>{{ $completedChecklists }}/{{ $totalChecklists }}</span>
+                                                    </div>
+                                                @endif
 
-                </div>
+                                                @if($task->attachments->count() > 0)
+                                                    <div class="kanban-card-badge-item" title="File đính kèm: {{ $task->attachments->count() }} file">
+                                                        <i class="fa-solid fa-paperclip"></i>
+                                                        <span>{{ $task->attachments->count() }}</span>
+                                                    </div>
+                                                @endif
+                                            </div>
+                                        @endif
+                                    </div>
+                                @endforeach
+                            </div>
+                        </div>
 
-                @if($tasks->hasPages())
-                    <div class="pagination-wrapper">
-                        {{ $tasks->links() }}
+                        <!-- CỘT: ĐANG LÀM -->
+                        <div class="kanban-column">
+                            <div class="kanban-column-header">
+                                <div class="kanban-column-title">
+                                    <i class="fa-solid fa-spinner" style="color: #2563eb;"></i>
+                                    <span>Đang làm</span>
+                                </div>
+                                <span class="kanban-column-count">{{ $doingKanban->count() }}</span>
+                            </div>
+                            <div class="kanban-column-body" data-status="Đang làm">
+                                @foreach($doingKanban as $task)
+                                    <div class="kanban-card" draggable="true" data-task-id="{{ $task->id }}" data-status="{{ $task->status }}">
+                                        <div class="kanban-card-meta">
+                                            @if($task->priority == 'Cao')
+                                                <span class="priority-badge priority-high">
+                                                    <i class="fa-solid fa-circle" style="font-size: 6px;"></i> Cao
+                                                </span>
+                                            @elseif($task->priority == 'Trung bình')
+                                                <span class="priority-badge priority-medium">
+                                                    <i class="fa-solid fa-circle" style="font-size: 6px;"></i> Trung bình
+                                                </span>
+                                            @else
+                                                <span class="priority-badge priority-low">
+                                                    <i class="fa-solid fa-circle" style="font-size: 6px;"></i> Thấp
+                                                </span>
+                                            @endif
+
+                                            @if($task->deadline)
+                                                @php
+                                                    $deadline = \Carbon\Carbon::parse($task->deadline);
+                                                    $today = \Carbon\Carbon::today();
+                                                @endphp
+                                                @if($task->status !== 'Hoàn thành' && $deadline->lt($today))
+                                                    <span class="deadline-badge overdue" title="Hạn: {{ $deadline->format('d/m/Y') }}">
+                                                        <i class="fa-solid fa-triangle-exclamation"></i>
+                                                        {{ $deadline->format('d/m/Y') }}
+                                                    </span>
+                                                @elseif($task->status !== 'Hoàn thành' && $deadline->isToday())
+                                                    <span class="deadline-badge today" title="Hạn: {{ $deadline->format('d/m/Y') }}">
+                                                        <i class="fa-regular fa-clock"></i>
+                                                        Hôm nay
+                                                    </span>
+                                                @else
+                                                    <span class="deadline-badge normal" title="Hạn: {{ $deadline->format('d/m/Y') }}">
+                                                        <i class="fa-regular fa-calendar"></i>
+                                                        {{ $deadline->format('d/m/Y') }}
+                                                    </span>
+                                                @endif
+                                            @endif
+                                        </div>
+
+                                        <a href="/tasks/{{ $task->id }}" class="kanban-card-title">
+                                            {{ $task->title }}
+                                        </a>
+
+                                        @if(($task->checklists->count() > 0) || ($task->attachments->count() > 0))
+                                            <div class="kanban-card-badges">
+                                                @if($task->checklists->count() > 0)
+                                                    @php
+                                                        $completedChecklists = $task->checklists->where('is_completed', true)->count();
+                                                        $totalChecklists = $task->checklists->count();
+                                                    @endphp
+                                                    <div class="kanban-card-badge-item" title="Checklist: {{ $completedChecklists }}/{{ $totalChecklists }} hoàn thành">
+                                                        <i class="fa-regular fa-square-check"></i>
+                                                        <span>{{ $completedChecklists }}/{{ $totalChecklists }}</span>
+                                                    </div>
+                                                @endif
+
+                                                @if($task->attachments->count() > 0)
+                                                    <div class="kanban-card-badge-item" title="File đính kèm: {{ $task->attachments->count() }} file">
+                                                        <i class="fa-solid fa-paperclip"></i>
+                                                        <span>{{ $task->attachments->count() }}</span>
+                                                    </div>
+                                                @endif
+                                            </div>
+                                        @endif
+                                    </div>
+                                @endforeach
+                            </div>
+                        </div>
+
+                        <!-- CỘT: HOÀN THÀNH -->
+                        <div class="kanban-column">
+                            <div class="kanban-column-header">
+                                <div class="kanban-column-title">
+                                    <i class="fa-regular fa-circle-check" style="color: #059669;"></i>
+                                    <span>Hoàn thành</span>
+                                </div>
+                                <span class="kanban-column-count">{{ $completedKanban->count() }}</span>
+                            </div>
+                            <div class="kanban-column-body" data-status="Hoàn thành">
+                                @foreach($completedKanban as $task)
+                                    <div class="kanban-card" draggable="true" data-task-id="{{ $task->id }}" data-status="{{ $task->status }}">
+                                        <div class="kanban-card-meta">
+                                            @if($task->priority == 'Cao')
+                                                <span class="priority-badge priority-high">
+                                                    <i class="fa-solid fa-circle" style="font-size: 6px;"></i> Cao
+                                                </span>
+                                            @elseif($task->priority == 'Trung bình')
+                                                <span class="priority-badge priority-medium">
+                                                    <i class="fa-solid fa-circle" style="font-size: 6px;"></i> Trung bình
+                                                </span>
+                                            @else
+                                                <span class="priority-badge priority-low">
+                                                    <i class="fa-solid fa-circle" style="font-size: 6px;"></i> Thấp
+                                                </span>
+                                            @endif
+
+                                            @if($task->deadline)
+                                                @php
+                                                    $deadline = \Carbon\Carbon::parse($task->deadline);
+                                                    $today = \Carbon\Carbon::today();
+                                                @endphp
+                                                @if($task->status !== 'Hoàn thành' && $deadline->lt($today))
+                                                    <span class="deadline-badge overdue" title="Hạn: {{ $deadline->format('d/m/Y') }}">
+                                                        <i class="fa-solid fa-triangle-exclamation"></i>
+                                                        {{ $deadline->format('d/m/Y') }}
+                                                    </span>
+                                                @elseif($task->status !== 'Hoàn thành' && $deadline->isToday())
+                                                    <span class="deadline-badge today" title="Hạn: {{ $deadline->format('d/m/Y') }}">
+                                                        <i class="fa-regular fa-clock"></i>
+                                                        Hôm nay
+                                                    </span>
+                                                @else
+                                                    <span class="deadline-badge normal" title="Hạn: {{ $deadline->format('d/m/Y') }}">
+                                                        <i class="fa-regular fa-calendar"></i>
+                                                        {{ $deadline->format('d/m/Y') }}
+                                                    </span>
+                                                @endif
+                                            @endif
+                                        </div>
+
+                                        <a href="/tasks/{{ $task->id }}" class="kanban-card-title">
+                                            {{ $task->title }}
+                                        </a>
+
+                                        @if(($task->checklists->count() > 0) || ($task->attachments->count() > 0))
+                                            <div class="kanban-card-badges">
+                                                @if($task->checklists->count() > 0)
+                                                    @php
+                                                        $completedChecklists = $task->checklists->where('is_completed', true)->count();
+                                                        $totalChecklists = $task->checklists->count();
+                                                    @endphp
+                                                    <div class="kanban-card-badge-item" title="Checklist: {{ $completedChecklists }}/{{ $totalChecklists }} hoàn thành">
+                                                        <i class="fa-regular fa-square-check"></i>
+                                                        <span>{{ $completedChecklists }}/{{ $totalChecklists }}</span>
+                                                    </div>
+                                                @endif
+
+                                                @if($task->attachments->count() > 0)
+                                                    <div class="kanban-card-badge-item" title="File đính kèm: {{ $task->attachments->count() }} file">
+                                                        <i class="fa-solid fa-paperclip"></i>
+                                                        <span>{{ $task->attachments->count() }}</span>
+                                                    </div>
+                                                @endif
+                                            </div>
+                                        @endif
+                                    </div>
+                                @endforeach
+                            </div>
+                        </div>
+                    </div>
+                @else
+                    <div class="empty">
+                        <i class="fa-regular fa-folder-open"></i>
+                        <p>
+                            Không tìm thấy công việc nào.
+                        </p>
+                        @if(request('search') || request('status') || request('priority') || request('deadline'))
+                            <a href="/tasks" class="reset-filter-btn" style="margin-top: 15px; display: inline-flex;">
+                                <i class="fa-solid fa-rotate-left"></i> Xóa bộ lọc tìm kiếm
+                            </a>
+                        @else
+                            <a href="/tasks/create" class="empty-cta-btn">
+                                <span class="empty-cta-icon"><i class="fa-solid fa-plus"></i></span>
+                                <span class="empty-cta-text">Thêm công việc ngay</span>
+                                <span class="empty-cta-arrow"><i class="fa-solid fa-arrow-right"></i></span>
+                            </a>
+                        @endif
                     </div>
                 @endif
-
-            @else
-
-                <div class="empty">
-                    <i class="fa-regular fa-folder-open"></i>
-                    <p>
-                        Không tìm thấy công việc nào.
-                    </p>
-                    @if(request('search') || request('status') || request('priority') || request('deadline'))
-                        <a href="/tasks" class="reset-filter-btn" style="margin-top: 15px; display: inline-flex;">
-                            <i class="fa-solid fa-rotate-left"></i> Xóa bộ lọc tìm kiếm
-                        </a>
-                    @else
-                        <a href="/tasks/create" class="add-btn" style="margin-top: 18px; display: inline-flex; width: auto;">
-                            <i class="fa-solid fa-plus"></i> Thêm công việc ngay
-                        </a>
-                    @endif
-                </div>
-
-            @endif
+            </div>
 
         </div>
 
@@ -1623,6 +2016,194 @@
             if (dropdown && container && !container.contains(e.target)) {
                 dropdown.classList.remove('show');
             }
+        });
+
+        // View Mode Switcher logic
+        function getSavedViewMode() {
+            const urlParams = new URLSearchParams(window.location.search);
+            if (urlParams.has('view')) {
+                return urlParams.get('view');
+            }
+            return localStorage.getItem('task_view_mode') || 'list';
+        }
+
+        function switchTaskView(mode) {
+            const listView = document.getElementById('taskListView');
+            const kanbanView = document.getElementById('taskKanbanView');
+            const btnList = document.getElementById('btnViewList');
+            const btnKanban = document.getElementById('btnViewKanban');
+
+            if (mode === 'kanban') {
+                if (listView) listView.style.display = 'none';
+                if (kanbanView) kanbanView.style.display = 'block';
+                if (btnList) btnList.classList.remove('active');
+                if (btnKanban) btnKanban.classList.add('active');
+                localStorage.setItem('task_view_mode', 'kanban');
+            } else {
+                if (kanbanView) kanbanView.style.display = 'none';
+                if (listView) listView.style.display = 'block';
+                if (btnKanban) btnKanban.classList.remove('active');
+                if (btnList) btnList.classList.add('active');
+                localStorage.setItem('task_view_mode', 'list');
+            }
+        }
+
+        // Dynamic Toast Notification helper
+        function showDynamicToast(message, type = 'success') {
+            let container = document.getElementById('toastContainer');
+            if (!container) {
+                container = document.createElement('div');
+                container.id = 'toastContainer';
+                container.className = 'toast-container';
+                document.body.appendChild(container);
+            }
+
+            const toast = document.createElement('div');
+            toast.className = `toast ${type === 'error' ? 'toast-error' : ''}`;
+            toast.innerHTML = `
+                <div class="toast-icon">
+                    <i class="fa-solid ${type === 'error' ? 'fa-circle-exclamation' : 'fa-circle-check'}"></i>
+                </div>
+                <div class="toast-content">${message}</div>
+                <button type="button" class="toast-close" onclick="closeToast(this)">
+                    <i class="fa-solid fa-xmark"></i>
+                </button>
+            `;
+            container.appendChild(toast);
+
+            setTimeout(() => {
+                toast.style.animation = 'fadeOut 0.3s forwards';
+                setTimeout(() => toast.remove(), 300);
+            }, 4000);
+        }
+
+        function updateKanbanCounts() {
+            document.querySelectorAll('.kanban-column-body').forEach(colBody => {
+                const count = colBody.querySelectorAll('.kanban-card').length;
+                const countEl = colBody.closest('.kanban-column').querySelector('.kanban-column-count');
+                if (countEl) countEl.textContent = count;
+            });
+        }
+
+        // HTML5 Drag and Drop Handlers for Kanban Board
+        document.addEventListener('DOMContentLoaded', function () {
+            // Restore saved view mode
+            const initialMode = getSavedViewMode();
+            switchTaskView(initialMode);
+
+            const cards = document.querySelectorAll('.kanban-card');
+            const columns = document.querySelectorAll('.kanban-column-body');
+
+            let draggedCard = null;
+            let sourceStatus = null;
+
+            cards.forEach(card => {
+                card.addEventListener('dragstart', function(e) {
+                    draggedCard = this;
+                    sourceStatus = this.getAttribute('data-status');
+                    this.classList.add('dragging');
+                    e.dataTransfer.effectAllowed = 'move';
+                    e.dataTransfer.setData('text/plain', this.getAttribute('data-task-id'));
+                });
+
+                card.addEventListener('dragend', function() {
+                    this.classList.remove('dragging');
+                    draggedCard = null;
+                    sourceStatus = null;
+                    columns.forEach(col => col.classList.remove('drag-over'));
+                });
+            });
+
+            columns.forEach(column => {
+                column.addEventListener('dragover', function(e) {
+                    e.preventDefault();
+                    e.dataTransfer.dropEffect = 'move';
+                    this.classList.add('drag-over');
+                });
+
+                column.addEventListener('dragleave', function(e) {
+                    if (!this.contains(e.relatedTarget)) {
+                        this.classList.remove('drag-over');
+                    }
+                });
+
+                column.addEventListener('drop', async function(e) {
+                    e.preventDefault();
+                    this.classList.remove('drag-over');
+
+                    if (!draggedCard) return;
+
+                    const targetStatus = this.getAttribute('data-status');
+                    if (targetStatus === sourceStatus) return;
+
+                    const taskId = draggedCard.getAttribute('data-task-id');
+                    const targetColumnBody = this;
+                    const originalColumnBody = draggedCard.parentElement;
+
+                    // Optimistic UI update
+                    targetColumnBody.appendChild(draggedCard);
+                    draggedCard.setAttribute('data-status', targetStatus);
+                    updateKanbanCounts();
+
+                    // Sync List View status select if table row exists
+                    const listRow = document.querySelector(`tr[data-task-id="${taskId}"]`);
+                    if (listRow) {
+                        const statusSelect = listRow.querySelector('.quick-status-select');
+                        if (statusSelect) {
+                            statusSelect.value = targetStatus;
+                            statusSelect.className = 'quick-status-select ' + (targetStatus === 'Hoàn thành' ? 'completed' : (targetStatus === 'Đang làm' ? 'doing' : 'pending'));
+                        }
+                    }
+
+                    const csrfTokenMeta = document.querySelector('meta[name="csrf-token"]');
+                    const csrfToken = csrfTokenMeta ? csrfTokenMeta.getAttribute('content') : '';
+
+                    try {
+                        const response = await fetch(`/tasks/${taskId}/status`, {
+                            method: 'PATCH',
+                            headers: {
+                                'Content-Type': 'application/json',
+                                'X-CSRF-TOKEN': csrfToken,
+                                'X-Requested-With': 'XMLHttpRequest',
+                                'Accept': 'application/json'
+                            },
+                            body: JSON.stringify({ status: targetStatus })
+                        });
+
+                        const data = await response.json();
+
+                        if (response.ok && data.success) {
+                            showDynamicToast(data.message || 'Cập nhật trạng thái công việc thành công!', 'success');
+                        } else {
+                            // Revert on failure or authorization error
+                            originalColumnBody.appendChild(draggedCard);
+                            draggedCard.setAttribute('data-status', sourceStatus);
+                            updateKanbanCounts();
+                            if (listRow) {
+                                const statusSelect = listRow.querySelector('.quick-status-select');
+                                if (statusSelect) {
+                                    statusSelect.value = sourceStatus;
+                                    statusSelect.className = 'quick-status-select ' + (sourceStatus === 'Hoàn thành' ? 'completed' : (sourceStatus === 'Đang làm' ? 'doing' : 'pending'));
+                                }
+                            }
+                            showDynamicToast(data.message || 'Không thể cập nhật trạng thái!', 'error');
+                        }
+                    } catch (err) {
+                        // Revert on network error
+                        originalColumnBody.appendChild(draggedCard);
+                        draggedCard.setAttribute('data-status', sourceStatus);
+                        updateKanbanCounts();
+                        if (listRow) {
+                            const statusSelect = listRow.querySelector('.quick-status-select');
+                            if (statusSelect) {
+                                statusSelect.value = sourceStatus;
+                                statusSelect.className = 'quick-status-select ' + (sourceStatus === 'Hoàn thành' ? 'completed' : (sourceStatus === 'Đang làm' ? 'doing' : 'pending'));
+                            }
+                        }
+                        showDynamicToast('Lỗi kết nối mạng, vui lòng thử lại!', 'error');
+                    }
+                });
+            });
         });
     </script>
 

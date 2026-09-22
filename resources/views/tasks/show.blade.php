@@ -8,6 +8,7 @@
 
     <link rel="stylesheet"
           href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.2/css/all.min.css">
+    <script src="{{ asset('js/dark-mode.js') }}"></script>
 
     <style>
         * {
@@ -698,6 +699,7 @@
             outline: none;
         }
     </style>
+    <link rel="stylesheet" href="{{ asset('css/dark-mode.css') }}">
 </head>
 
 <body>
@@ -789,7 +791,13 @@
                 </p>
             </div>
 
-            <div class="profile">
+            <div style="display: flex; align-items: center; gap: 16px;">
+                <button type="button" class="dark-mode-toggle" id="darkModeToggle">
+                    <i class="fa-solid fa-moon"></i>
+                    <span class="toggle-text">Giao diện tối</span>
+                </button>
+
+                <div class="profile">
                 <div class="profile-info">
                     <strong>
                         {{ Auth::user()->name }}
@@ -802,6 +810,7 @@
                 <div class="avatar">
                     {{ strtoupper(substr(Auth::user()->name, 0, 1)) }}
                 </div>
+            </div>
             </div>
 
         </div>
@@ -1062,16 +1071,16 @@
                                 }
                             @endphp
 
-                            <div style="background: #ffffff; border: 1px solid #e2e8f0; border-radius: 12px; padding: 14px 16px; display: flex; align-items: center; justify-content: space-between; gap: 12px; box-shadow: 0 2px 8px rgba(0,0,0,0.02); transition: all 0.2s ease;">
+                            <div class="attachment-item" style="background: #ffffff; border: 1px solid #e2e8f0; border-radius: 12px; padding: 14px 16px; display: flex; align-items: center; justify-content: space-between; gap: 12px; box-shadow: 0 2px 8px rgba(0,0,0,0.02); transition: all 0.2s ease;">
                                 <div style="display: flex; align-items: center; gap: 12px; overflow: hidden;">
                                     <div style="width: 40px; height: 40px; border-radius: 10px; background: {{ $bgColor }}; color: {{ $iconColor }}; display: flex; align-items: center; justify-content: center; font-size: 18px; flex-shrink: 0;">
                                         <i class="fa-solid {{ $icon }}"></i>
                                     </div>
                                     <div style="overflow: hidden;">
-                                        <div style="font-size: 13px; font-weight: bold; color: #1e293b; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;" title="{{ $file->original_name }}">
+                                        <div class="attachment-file-name" style="font-size: 13px; font-weight: bold; color: #1e293b; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;" title="{{ $file->original_name }}">
                                             {{ $file->original_name }}
                                         </div>
-                                        <div style="font-size: 11px; color: #64748b; margin-top: 2px;">
+                                        <div class="attachment-file-subtext" style="font-size: 11px; color: #64748b; margin-top: 2px;">
                                             {{ round($file->file_size / 1024, 1) }} KB — {{ $file->created_at->format('d/m/Y') }}
                                         </div>
                                     </div>

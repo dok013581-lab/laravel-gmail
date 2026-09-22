@@ -8,6 +8,7 @@
 
     <link rel="stylesheet"
           href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.2/css/all.min.css">
+    <script src="{{ asset('js/dark-mode.js') }}"></script>
 
     <style>
         * {
@@ -340,6 +341,7 @@
             }
         }
     </style>
+    <link rel="stylesheet" href="{{ asset('css/dark-mode.css') }}">
 </head>
 
 <body>
@@ -389,13 +391,19 @@
     <!-- MAIN -->
     <main class="main">
 
-        <div class="page-header">
-            <h1>
-                Sửa công việc
-            </h1>
-            <p>
-                Cập nhật thông tin công việc của bạn.
-            </p>
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 25px;">
+            <div class="page-header" style="margin-bottom: 0;">
+                <h1>
+                    Sửa công việc
+                </h1>
+                <p>
+                    Cập nhật thông tin công việc của bạn.
+                </p>
+            </div>
+            <button type="button" class="dark-mode-toggle" id="darkModeToggle">
+                <i class="fa-solid fa-moon"></i>
+                <span class="toggle-text">Giao diện tối</span>
+            </button>
         </div>
 
         <div class="card">
