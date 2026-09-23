@@ -88,6 +88,19 @@ Route::middleware('auth')->group(function () {
 
         return view('profile', compact('totalTasks', 'completedTasks'));
     });
+    Route::post('/profile/avatar', function (Illuminate\Http\Request $request) {
+    $request->validate([
+        'avatar' => 'required|image|mimes:jpg,jpeg,png,webp|max:2048',
+    ]);
+
+    $path = $request->file('avatar')->store('avatars', 'public');
+
+    Auth::user()->update([
+        'avatar' => $path,
+    ]);
+
+    return back()->with('success', 'Cập nhật ảnh đại diện thành công!');
+    });
 
     Route::get('/tasks', [TaskController::class, 'index']);
     Route::get('/tasks/create', [TaskController::class, 'create']);

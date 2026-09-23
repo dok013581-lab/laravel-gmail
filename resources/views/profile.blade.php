@@ -210,6 +210,13 @@
             font-weight: bold;
             font-size: 15px;
         }
+        .topbar-avatar img {
+            width: 100%;
+            height: 100%;
+            border-radius: 50%;
+            object-fit: cover;
+            display: block;
+        }
 
         /* NOTIFICATION CENTER */
         .notif-container {
@@ -439,6 +446,7 @@
 
         .profile-header {
             display: flex;
+            flex-direction: row-reverse;
             align-items: center;
             gap: 24px;
             padding-bottom: 28px;
@@ -460,7 +468,29 @@
             box-shadow: 0 6px 18px rgba(37,99,235,0.25);
             flex-shrink: 0;
         }
+        .big-avatar img {
+            width: 100%;
+            height: 100%;
+            border-radius: 50%;
+            object-fit: cover;
+            display: block;
+        }
+        .choose-file-btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    padding: 9px 14px;
+    border-radius: 8px;
+    background: #f3f4f6;
+    color: #374151;
+    font-size: 14px;
+    font-weight: 600;
+    cursor: pointer;
+}
 
+.choose-file-btn:hover {
+    background: #e5e7eb;
+}
         .profile-user-info h2 {
             margin: 0 0 6px;
             font-size: 24px;
@@ -793,7 +823,11 @@
                     </div>
 
                     <div class="topbar-avatar">
+                        @if(Auth::user()->avatar)
+                        <img src="{{ asset('storage/' . Auth::user()->avatar) }}" alt="Avatar">
+                        @else
                         {{ strtoupper(substr(Auth::user()->name, 0, 1)) }}
+                        @endif
                     </div>
                 </div>
             </div>
@@ -805,13 +839,32 @@
 
             <div class="profile-header">
                 <div class="big-avatar">
-                    {{ strtoupper(substr(Auth::user()->name, 0, 1)) }}
-                </div>
+                @if(Auth::user()->avatar)
+                <img src="{{ asset('storage/' . Auth::user()->avatar) }}" alt="Avatar">
+                @else
+                {{ strtoupper(substr(Auth::user()->name, 0, 1)) }}
+                @endif
+            </div>
+            <form action="{{ url('/profile/avatar') }}" method="POST" enctype="multipart/form-data" style="margin-top: 15px; transform: translateX(0px);">
+             @csrf
 
-                <div class="profile-user-info">
-                    <h2>
-                        {{ Auth::user()->name }}
-                    </h2>
+    <label for="avatarInput" class="choose-file-btn">
+        Cập nhật ảnh đại diện
+    </label>
+
+    <input
+        type="file"
+        id="avatarInput"
+        name="avatar"
+        accept=".jpg,.jpeg,.png,.webp"
+        required
+        onchange="this.form.submit()"
+        style="display: none;"
+    >
+            </form>
+
+                <div class="profile-user-info" style="transform: translateX(-210px);">
+    <h2>{{ Auth::user()->name }}</h2>
                     <p>
                         <i class="fa-regular fa-envelope"></i>
                         {{ Auth::user()->email }}

@@ -239,6 +239,13 @@
             font-weight: bold;
             font-size: 15px;
         }
+        .avatar img {
+            width: 100%;
+            height: 100%;
+            border-radius: 50%;
+            object-fit: cover;
+            display: block;
+    }
 
         .profile-info {
             text-align: right;
@@ -1208,7 +1215,11 @@
                     </div>
 
                     <div class="avatar">
-                        {{ strtoupper(substr(Auth::user()->name, 0, 1)) }}
+                    @if(Auth::user()->avatar)
+                    <img src="{{ asset('storage/' . Auth::user()->avatar) }}" alt="Avatar">
+                    @else
+                    {{ strtoupper(substr(Auth::user()->name, 0, 1)) }}
+                    @endif
                     </div>
                 </div>
             </div>

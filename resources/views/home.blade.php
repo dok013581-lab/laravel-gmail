@@ -104,6 +104,13 @@
     font-weight: bold;
     font-size: 15px;
 }
+.user-avatar img {
+    width: 100%;
+    height: 100%;
+    border-radius: 50%;
+    object-fit: cover;
+    display: block;
+}
 
 .user-info {
     display: flex;
@@ -1240,7 +1247,11 @@
     <div class="user-account">
 
         <div class="user-avatar">
+            @if(Auth::user()->avatar)
+            <img src="{{ asset('storage/' . Auth::user()->avatar) }}" alt="Avatar">
+            @else
             {{ strtoupper(substr(Auth::user()->name, 0, 1)) }}
+            @endif
         </div>
 
         <div class="user-info">
